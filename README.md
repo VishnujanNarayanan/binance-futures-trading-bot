@@ -57,6 +57,9 @@ python3 trading_bot/cli.py
 ### Completed Order Response
 ![Completed Order](screenshots/completed_order.png)
 
+### Failed Order Validation
+![Failed Order](screenshots/failed_order.png)
+
 ### 2. Headless Mode (Command Line Arguments)
 You can bypass the interactive menu by providing the required arguments directly. This is ideal for scripts or automation.
 
