@@ -12,6 +12,7 @@ A production-quality Python trading bot for the Binance Futures Testnet (USDT-M)
 ## Project Structure
 ```text
 Trading_Bot/
+├── screenshots/              # Application screenshots
 ├── trading_bot/
 │   ├── bot/
 │   │   ├── __init__.py
@@ -50,6 +51,10 @@ Launch the beautiful, prompt-based interactive menu by running the script withou
 python3 trading_bot/cli.py
 ```
 
+<div align="center">
+  <img src="screenshots/interactive_menu.png" alt="Interactive CLI Menu" width="800"/>
+</div>
+
 ### 2. Headless Mode (Command Line Arguments)
 You can bypass the interactive menu by providing the required arguments directly. This is ideal for scripts or automation.
 
@@ -70,3 +75,7 @@ python3 trading_bot/cli.py --symbol BTCUSDT --side BUY --type STOP_LIMIT --quant
 
 ## Logs
 All API requests, successful responses, and errors are cleanly logged into `trading.log` (generated automatically upon first run) in structured JSON format.
+
+<div align="center">
+  <img src="screenshots/clean_logs.png" alt="JSON Structured Logging" width="800"/>
+</div>
