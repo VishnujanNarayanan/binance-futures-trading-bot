@@ -53,12 +53,15 @@ python3 trading_bot/cli.py
 
 ### Interactive CLI Menu
 ![Interactive CLI Menu](screenshots/interactive_menu.png)
+The interactive menu allows for seamless order creation using **arrow keys** for selection and secure text inputs. It provides a guided experience, ensuring all required parameters like symbol, quantity, and price are correctly entered.
 
 ### Completed Order Response
 ![Completed Order](screenshots/completed_order.png)
+Upon successful order placement, the CLI displays a formatted table with the **Order ID**, **Status**, and **Executed Quantity** returned from the Binance API, followed by a clear success confirmation.
 
 ### Failed Order Validation
 ![Failed Order](screenshots/failed_order.png)
+The application handles errors gracefully. If an invalid value is entered (e.g., negative quantity) or an API constraint is hit (e.g., price out of range), the specific **reason for failure** is surfaced clearly to the user with a formatted failure status.
 
 ### 2. Headless Mode (Command Line Arguments)
 You can bypass the interactive menu by providing the required arguments directly. This is ideal for scripts or automation.
@@ -83,3 +86,4 @@ All API requests, successful responses, and errors are cleanly logged into `trad
 
 ### JSON Structured Logging
 ![JSON Logs](screenshots/clean_logs.png)
+Logs are stored in a highly readable, structured JSON format with double-line spacing between requests, making it easy to audit transactions and troubleshoot errors without clutter.
