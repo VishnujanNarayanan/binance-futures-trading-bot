@@ -51,9 +51,11 @@ Launch the beautiful, prompt-based interactive menu by running the script withou
 python3 trading_bot/cli.py
 ```
 
-<div align="center">
-  <img src="screenshots/interactive_menu.png" alt="Interactive CLI Menu" width="800"/>
-</div>
+### Interactive CLI Menu
+![Interactive CLI Menu](screenshots/interactive_menu.png)
+
+### Completed Order Response
+![Completed Order](screenshots/completed_order.png)
 
 ### 2. Headless Mode (Command Line Arguments)
 You can bypass the interactive menu by providing the required arguments directly. This is ideal for scripts or automation.
@@ -78,5 +80,3 @@ All API requests, successful responses, and errors are cleanly logged into `trad
 
 ### JSON Structured Logging
 ![JSON Logs](screenshots/clean_logs.png)
-"/>
-</div>
