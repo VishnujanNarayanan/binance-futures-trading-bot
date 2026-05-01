@@ -64,7 +64,9 @@ Upon successful order placement, the CLI displays a formatted table with the **O
 The application handles errors gracefully. If an invalid value is entered (e.g., negative quantity) or an API constraint is hit (e.g., price out of range), the specific **reason for failure** is surfaced clearly to the user with a formatted failure status.
 
 ### 2. Headless Mode (Command Line Arguments)
-You can bypass the interactive menu by providing the required arguments directly. This is ideal for scripts or automation.
+You can bypass the interactive menu by providing the required arguments directly. This is ideal for scripts or automation. 
+
+> **Note:** In Headless Mode, we assume the user provides correct and accurate values. While basic validation is still performed, it is the user's responsibility to ensure parameters meet exchange constraints. If an order fails due to incorrect values, the failure will be logged and reported as user-input error.
 
 **Market Order:**
 ```bash
