@@ -34,12 +34,13 @@ Trading_Bot/
    source .venv/bin/activate
    pip install -r requirements.txt
    ```
-3. **Configure Environment Variables:**
-   Create a `.env` file in the root `Trading_Bot/` directory and add your Binance Futures Testnet credentials:
-   ```env
-   BINANCE_API_KEY=your_testnet_api_key_here
-   BINANCE_API_SECRET=your_testnet_api_secret_here
-   ```
+3. **Configure Environment Variables (Two Options):**
+   - **Option A (Bypass File):** Simply run the script! If no `.env` file is found, the interactive CLI will securely prompt you to paste your Binance Futures Testnet API Key and Secret directly into the terminal.
+   - **Option B (Create `.env`):** To avoid typing it every time, create a `.env` file in the root directory (next to this README) and add your credentials:
+     ```env
+     BINANCE_API_KEY=your_testnet_api_key_here
+     BINANCE_API_SECRET=your_testnet_api_secret_here
+     ```
 
 ## Usage
 
