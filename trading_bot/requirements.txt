@@ -1,0 +1,4 @@
+python-binance==1.0.36
+python-dotenv==1.0.1
+questionary==2.0.1
+rich==13.7.1

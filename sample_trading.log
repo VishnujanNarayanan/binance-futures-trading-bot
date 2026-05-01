@@ -1,0 +1,22 @@
+[2026-05-01 15:08:04,273] INFO: API Request (MARKET): {"symbol": "BTCUSDT", "side": "BUY", "type": "MARKET", "quantity": 0.01}
+[2026-05-01 15:08:04,581] INFO: API Response (MARKET): {"orderId": 13096054981, "symbol": "BTCUSDT", "status": "NEW", "clientOrderId": "x-Cb7ytekJ3f5bcb2ff8d9c349ec5f54", "price": "0.00", "avgPrice": "0.00", "origQty": "0.0100", "executedQty": "0.0000", "cumQty": "0.0000", "cumQuote": "0.000000", "timeInForce": "GTC", "type": "MARKET", "reduceOnly": false, "closePosition": false, "side": "BUY", "positionSide": "BOTH", "stopPrice": "0.00", "workingType": "CONTRACT_PRICE", "priceProtect": false, "origType": "MARKET", "priceMatch": "NONE", "selfTradePreventionMode": "EXPIRE_MAKER", "goodTillDate": 0, "updateTime": 1777628286143}
+
+
+[2026-05-01 15:08:07,816] INFO: API Request (LIMIT): {"symbol": "BTCUSDT", "side": "SELL", "type": "LIMIT", "quantity": 0.01, "price": 85000.0, "timeInForce": "GTC"}
+[2026-05-01 15:08:08,381] INFO: API Response (LIMIT): {"orderId": 13096055079, "symbol": "BTCUSDT", "status": "NEW", "clientOrderId": "x-Cb7ytekJ3d6243e71c0a94d378ba78", "price": "85000.00", "avgPrice": "0.00", "origQty": "0.0100", "executedQty": "0.0000", "cumQty": "0.0000", "cumQuote": "0.000000", "timeInForce": "GTC", "type": "LIMIT", "reduceOnly": false, "closePosition": false, "side": "SELL", "positionSide": "BOTH", "stopPrice": "0.00", "workingType": "CONTRACT_PRICE", "priceProtect": false, "origType": "LIMIT", "priceMatch": "NONE", "selfTradePreventionMode": "EXPIRE_MAKER", "goodTillDate": 0, "updateTime": 1777628289788}
+
+
+[2026-05-01 15:08:10,716] INFO: API Request (STOP_LIMIT): {"symbol": "BTCUSDT", "side": "BUY", "type": "STOP", "quantity": 0.01, "price": 86000.0, "stopPrice": 85000.0, "timeInForce": "GTC"}
+[2026-05-01 15:08:12,600] INFO: API Response (STOP_LIMIT): {"algoId": 1000000062876129, "clientAlgoId": "x-Cb7ytekJ887878f0c1cccca0239ce5", "algoType": "CONDITIONAL", "orderType": "STOP", "symbol": "BTCUSDT", "side": "BUY", "positionSide": "BOTH", "timeInForce": "GTC", "quantity": "0.0100", "algoStatus": "NEW", "triggerPrice": "85000.00", "price": "86000.00", "icebergQuantity": null, "selfTradePreventionMode": "EXPIRE_MAKER", "workingType": "CONTRACT_PRICE", "priceMatch": "NONE", "closePosition": false, "priceProtect": false, "reduceOnly": false, "createTime": 1777628292490, "updateTime": 1777628292490, "triggerTime": 0, "goodTillDate": 0}
+
+
+[2026-05-01 15:08:15,125] ERROR: Validation Error: Price is required and must be greater than 0 for LIMIT orders.
+
+
+[2026-05-01 15:08:17,686] ERROR: Validation Error: Quantity must be greater than 0.
+
+
+[2026-05-01 15:08:20,479] INFO: API Request (LIMIT): {"symbol": "BTCUSDT", "side": "BUY", "type": "LIMIT", "quantity": 0.01, "price": 900000.0, "timeInForce": "GTC"}
+[2026-05-01 15:08:20,768] ERROR: API Error (LIMIT): APIError(code=-4002): Price greater than max price.
+
+
