@@ -1,84 +1,38 @@
-# ========================
-
 # Python
-
-# ========================
-
-**pycache**/
+__pycache__/
 *.pyc
 *.pyo
 *.pyd
 
-# ========================
-
 # Virtual Environment
-
-# ========================
-
 .venv/
 venv/
 env/
 
-# ========================
-
 # Environment Variables (CRITICAL)
-
-# ========================
-
 .env
 
-# ========================
-
-# Logs (you will add sample manually)
-
-# ========================
-
+# Logs
 *.log
 !sample_trading.log
 
-# ========================
-
 # Internal Assignment Files
-
-# ========================
-
 *.docx
 
-# ========================
-
 # OS Files
-
-# ========================
-
 .DS_Store
 Thumbs.db
 
-# ========================
-
 # IDE / Editor
-
-# ========================
-
 .vscode/
 .idea/
 
-# ========================
-
 # Build / Packaging
-
-# ========================
-
 build/
 dist/
 *.egg-info/
 
-# ========================
-
 # Testing / Cache
-
-# ========================
-
 .pytest_cache/
 .coverage
 htmlcov/
-
