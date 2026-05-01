@@ -76,6 +76,7 @@ python3 trading_bot/cli.py --symbol BTCUSDT --side BUY --type STOP_LIMIT --quant
 ## Logs
 All API requests, successful responses, and errors are cleanly logged into `trading.log` (generated automatically upon first run) in structured JSON format.
 
-<div align="center">
-  <img src="screenshots/clean_logs.png" alt="JSON Structured Logging" width="800"/>
+### JSON Structured Logging
+![JSON Logs](screenshots/clean_logs.png)
+"/>
 </div>
