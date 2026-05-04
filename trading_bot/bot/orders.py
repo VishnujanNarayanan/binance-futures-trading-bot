@@ -1,6 +1,47 @@
 import json
-from bot.client import place_futures_order
+from bot.client import place_futures_order, client
 from bot.logging_config import logger
+
+def get_open_positions():
+    """Fetch all open positions from Binance Futures."""
+    try:
+        positions = client.futures_position_information()
+        # Filter only positions with non-zero quantity
+        open_positions = [pos for pos in positions if float(pos.get("positionAmt", 0)) != 0]
+        return open_positions
+    except Exception as e:
+        logger.error(f"Error fetching positions: {str(e)}\n\n")
+        raise
+
+def close_position(symbol: str):
+    """Closes an open position by placing a market order in the opposite direction."""
+    try:
+        positions = get_open_positions()
+        pos = next((p for p in positions if p["symbol"] == symbol), None)
+        
+        if not pos:
+            raise ValueError(f"No open position found for symbol {symbol}")
+            
+        amt = float(pos["positionAmt"])
+        side = "SELL" if amt > 0 else "BUY"
+        quantity = abs(amt)
+        
+        params = {
+            "symbol": symbol,
+            "side": side,
+            "type": "MARKET",
+            "quantity": quantity,
+            "reduceOnly": "true" # Ensure we only close or reduce, not open a new position
+        }
+        
+        logger.info(f"API Request (CLOSE POSITION - {symbol}): {json.dumps(params)}")
+        response = place_futures_order(**params)
+        logger.info(f"API Response (CLOSE POSITION - {symbol}): {json.dumps(response)}\n\n")
+        return _format_response(response)
+        
+    except Exception as e:
+        logger.error(f"Error closing position for {symbol}: {str(e)}\n\n")
+        raise
 
 def place_market_order(symbol: str, side: str, quantity: float):
     params = {
