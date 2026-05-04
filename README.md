@@ -4,6 +4,7 @@ A production-quality Python trading bot for the Binance Futures Testnet (USDT-M)
 
 ## Features
 - **Supported Orders**: `MARKET`, `LIMIT`, and `STOP_LIMIT`.
+- **Position Management**: View open positions and close specific positions directly from the CLI.
 - **Interactive UI**: A rich, prompt-based interactive menu with arrow-key navigation.
 - **Headless Mode**: Full `argparse` support for standard CLI automation.
 - **Strict Validation**: Pre-API payload validation to prevent malformed requests.
@@ -53,7 +54,7 @@ python3 trading_bot/cli.py
 
 ### Interactive CLI Menu
 ![Interactive CLI Menu](screenshots/interactive_menu.png)
-The interactive menu allows for seamless order creation using **arrow keys** for selection and secure text inputs. It provides a guided experience, ensuring all required parameters like symbol, quantity, and price are correctly entered.
+The interactive menu allows for seamless order creation using **arrow keys** for selection and secure text inputs. It provides a guided experience, ensuring all required parameters like symbol, quantity, and price are correctly entered. You can also view open positions and selectively close them directly from the menu.
 
 ### Completed Order Response
 ![Completed Order](screenshots/completed_order.png)
@@ -81,6 +82,16 @@ python3 trading_bot/cli.py --symbol BTCUSDT --side SELL --type LIMIT --quantity 
 **Stop-Limit Order:**
 ```bash
 python3 trading_bot/cli.py --symbol BTCUSDT --side BUY --type STOP_LIMIT --quantity 0.01 --price 86000 --stop_price 85000
+```
+
+**View Open Positions:**
+```bash
+python3 trading_bot/cli.py --action positions
+```
+
+**Close a Position:**
+```bash
+python3 trading_bot/cli.py --action close --symbol BTCUSDT
 ```
 
 ## Logs
