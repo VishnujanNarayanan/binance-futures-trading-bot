@@ -246,7 +246,7 @@ def execute_order(args):
         
         res_table.add_row("Order ID", str(result.get('orderId')))
         res_table.add_row("Status", str(result.get('status')))
-        res_table.add_row("Executed Qty", str(result.get('executedQty')))
+        res_table.add_row("Quantity", str(result.get('executedQty')))
         if result.get('avgPrice') and float(result.get('avgPrice')) > 0:
             res_table.add_row("Avg Price", str(result.get('avgPrice')))
             

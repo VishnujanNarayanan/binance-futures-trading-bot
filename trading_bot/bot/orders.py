@@ -100,9 +100,13 @@ def place_stop_limit_order(symbol: str, side: str, quantity: float, price: float
         raise
 
 def _format_response(response):
+    qty = response.get("executedQty", "0")
+    if float(qty) == 0:
+        qty = response.get("origQty") or response.get("quantity", "0")
+
     return {
         "orderId": response.get("orderId") or response.get("algoId"),
         "status": response.get("status") or response.get("algoStatus"),
-        "executedQty": response.get("executedQty", "0"),
+        "executedQty": qty,
         "avgPrice": response.get("avgPrice")
     }
