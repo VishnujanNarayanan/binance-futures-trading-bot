@@ -125,3 +125,11 @@ def test_history_can_be_filtered_by_symbol(fake_client):
 
     filtered = client.get("/orders/history", params={"symbol": "ETHUSDT"}).json()
     assert [row["symbol"] for row in filtered] == ["ETHUSDT"]
+
+
+def test_the_bare_url_redirects_to_the_docs():
+    # The deployed hostname is what gets shared, and FastAPI has no root route by
+    # default -- so without this the first thing a visitor sees is a 404.
+    response = client.get("/", follow_redirects=False)
+    assert response.status_code == 307
+    assert response.headers["location"] == "/docs"
