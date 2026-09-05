@@ -32,6 +32,7 @@
   ⚡ <a href="#installation">Installation</a> ·
   🧑‍💻 <a href="#usage">Usage</a> ·
   🌐 <a href="#rest-api">REST API</a> ·
+  📖 <a href="#published-api-docs">API Docs</a> ·
   🐳 <a href="#docker">Docker</a> ·
   🧪 <a href="#testing">Testing</a> ·
   🖼️ <a href="#screenshots">Screenshots</a> ·
@@ -219,6 +220,7 @@ Credentials are resolved in this order:
 | `BINANCE_API_KEY` | Yes | Binance **Futures Testnet** API key |
 | `BINANCE_API_SECRET` | Yes | Binance **Futures Testnet** API secret |
 | `TRADING_BOT_API_KEY` | For the REST API | Gates the endpoints that can place or close orders |
+| `TRADING_BOT_CORS_ORIGINS` | No | Comma-separated browser origins allowed to call the API |
 | `TRADING_BOT_DB` | No | Order history database path (default `trading_bot.db`) |
 | `TRADING_BOT_LOG` | No | Log file path (default `trading.log`) |
 
@@ -350,6 +352,34 @@ Status codes are meaningful rather than uniform:
 curl -X POST http://127.0.0.1:8000/orders \
   -H 'Content-Type: application/json' \
   -d '{"symbol":"BTCUSDT","side":"BUY","type":"MARKET","quantity":0.01}'
+```
+
+### Published API docs
+
+**<https://vishnujannarayanan.github.io/binance-futures-trading-bot/>**
+
+GitHub Pages serves static files and cannot run FastAPI, so `scripts/build_docs.py` dumps the
+OpenAPI schema at build time and renders it with a standalone Swagger UI. The result loads
+instantly and never sleeps, which the live service cannot promise on a free instance.
+
+The split is deliberate:
+
+| | Hosted on | Cold start | What it is for |
+|---|---|---|---|
+| Documentation | GitHub Pages | none | Seeing what the API does |
+| Live API | Render | ~45s if idle | Actually calling it |
+
+**Try it out** on that page issues real requests against the Render deployment, which is why
+the API allows the `github.io` origin through CORS. Reads work for anyone; placing or closing
+an order needs the `X-API-Key` header via **Authorize**.
+
+Publishing is handled by `.github/workflows/pages.yml` on every push to `main`. It needs
+**Settings → Pages → Source: GitHub Actions** set once on the repository.
+
+Build it locally with:
+
+```bash
+python scripts/build_docs.py site && python -m http.server -d site
 ```
 
 ### Deploying it
