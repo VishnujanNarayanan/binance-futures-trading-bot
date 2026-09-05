@@ -36,3 +36,7 @@ dist/
 .pytest_cache/
 .coverage
 htmlcov/
+# Resume extraction material — personal career data, never committed
+bullet_extract_latest.yaml
+bullet_extract_[0-9]*.yaml
+resume_extract*.yaml

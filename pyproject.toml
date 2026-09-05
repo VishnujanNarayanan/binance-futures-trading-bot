@@ -1,0 +1,29 @@
+# Tooling configuration. Pinned in the repo (rather than relying on ruff's built-in
+# defaults) so that a local run and a CI run enforce exactly the same rules — ruff
+# changes its default rule set between releases.
+
+[tool.ruff]
+line-length = 120
+target-version = "py39"
+
+[tool.ruff.lint]
+select = [
+    "E",    # pycodestyle errors
+    "F",    # pyflakes
+    "I",    # import sorting
+    "UP",   # pyupgrade
+    "B",    # bugbear
+    "SIM",  # simplify
+    "RUF",  # ruff-specific
+]
+ignore = [
+    "E501",    # line length is handled by the formatter, not enforced here
+    "SIM105",  # contextlib.suppress is not clearer than try/except: pass here
+]
+
+[tool.ruff.lint.isort]
+known-first-party = ["bot"]
+
+[tool.ruff.lint.per-file-ignores]
+# Tests reach into module internals deliberately.
+"tests/*" = ["S101"]
