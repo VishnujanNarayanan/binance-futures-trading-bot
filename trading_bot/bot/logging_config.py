@@ -1,5 +1,5 @@
 import logging
-import sys
+import os
 
 def setup_logger():
     logger = logging.getLogger("trading_bot")
@@ -7,7 +7,8 @@ def setup_logger():
         logger.setLevel(logging.INFO)
         
         # File handler
-        file_handler = logging.FileHandler("trading.log")
+        log_path = os.getenv("TRADING_BOT_LOG", "trading.log")
+        file_handler = logging.FileHandler(log_path)
         file_handler.setLevel(logging.INFO)
         
         # Formatter - Clean, compact format
