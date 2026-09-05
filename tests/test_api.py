@@ -221,3 +221,41 @@ def test_the_docs_advertise_the_api_key_scheme():
     schema = client.get("/openapi.json").json()
     assert "APIKeyHeader" in schema["components"]["securitySchemes"]
     assert schema["components"]["securitySchemes"]["APIKeyHeader"]["name"] == "X-API-Key"
+
+
+# --- CORS ---------------------------------------------------------------------
+# The static docs live on github.io and call this API from the browser, so the
+# origin has to be allowed explicitly.
+
+def test_the_docs_origin_may_call_the_api_from_a_browser():
+    response = client.options(
+        "/orders",
+        headers={
+            "Origin": "https://vishnujannarayanan.github.io",
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "x-api-key,content-type",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.headers["access-control-allow-origin"] == "https://vishnujannarayanan.github.io"
+    assert "x-api-key" in response.headers["access-control-allow-headers"].lower()
+
+
+def test_an_unknown_origin_is_not_granted_access():
+    response = client.options(
+        "/orders",
+        headers={
+            "Origin": "https://evil.example.com",
+            "Access-Control-Request-Method": "POST",
+        },
+    )
+
+    assert "access-control-allow-origin" not in response.headers
+
+
+def test_credentials_are_not_allowed_cross_origin():
+    # Auth here is a header, not a cookie. Allowing credentials would let a browser
+    # attach ambient auth to cross-origin calls, which is how CORS gets dangerous.
+    response = client.get("/health", headers={"Origin": "https://vishnujannarayanan.github.io"})
+    assert response.headers.get("access-control-allow-credentials") != "true"

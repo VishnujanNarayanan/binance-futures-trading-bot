@@ -51,3 +51,9 @@ services:
       # anonymous orders.
       - key: TRADING_BOT_API_KEY
         sync: false
+
+      # Browser origins allowed to call this API. The published docs on GitHub Pages
+      # need this; without it the browser blocks every Try-it-out call. Listed
+      # explicitly rather than "*" because this API can place trades.
+      - key: TRADING_BOT_CORS_ORIGINS
+        value: https://vishnujannarayanan.github.io
