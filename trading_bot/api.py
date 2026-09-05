@@ -8,11 +8,14 @@ as one placed from the terminal.
 Run locally:
     uvicorn api:app --reload        # from inside trading_bot/
 """
+import os
+import secrets
 from typing import Optional
 
 from binance.exceptions import BinanceAPIException
-from fastapi import FastAPI, HTTPException
+from fastapi import Depends, FastAPI, HTTPException, Security
 from fastapi.responses import RedirectResponse
+from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, Field
 
 from bot.orders import (
@@ -27,9 +30,39 @@ from bot.validators import validate_inputs
 
 app = FastAPI(
     title="Binance Futures Testnet Trading Bot",
-    description="REST interface over the same validated execution path as the CLI.",
-    version="1.0.0",
+    description=(
+        "REST interface over the same validated execution path as the CLI.\n\n"
+        "Reads are open. Anything that moves money -- placing an order, closing a "
+        "position -- requires an `X-API-Key` header. Use the **Authorize** button."
+    ),
+    version="1.1.0",
 )
+
+# auto_error=False so a missing header reaches require_api_key and gets the same 401
+# as a wrong one. Letting FastAPI raise its own 403 first would tell an attacker
+# whether the header name was right.
+_api_key_header = APIKeyHeader(name="X-API-Key", auto_error=False)
+
+
+def require_api_key(provided: Optional[str] = Security(_api_key_header)):
+    """Gate the endpoints that can move money.
+
+    Read endpoints are deliberately left open so the docs stay useful to a visitor.
+    """
+    expected = os.getenv("TRADING_BOT_API_KEY")
+
+    # Fail CLOSED. A deployment with no key configured refuses to trade rather than
+    # silently accepting anonymous orders -- the failure mode that would matter.
+    if not expected:
+        raise HTTPException(
+            status_code=503,
+            detail="Trading is disabled: this deployment has no TRADING_BOT_API_KEY set.",
+        )
+
+    # Compared in constant time so the response time cannot be used to guess the key
+    # one character at a time. Encoded because compare_digest rejects non-ASCII str.
+    if not provided or not secrets.compare_digest(provided.encode(), expected.encode()):
+        raise HTTPException(status_code=401, detail="Missing or invalid X-API-Key.")
 
 
 class OrderRequest(BaseModel):
@@ -58,9 +91,12 @@ def health():
     return {"status": "ok"}
 
 
-@app.post("/orders", tags=["orders"])
+@app.post("/orders", tags=["orders"], dependencies=[Depends(require_api_key)])
 def create_order(order: OrderRequest):
-    """Validate and place an order. 422 on bad input, 502 if the exchange rejects it."""
+    """Validate and place an order. Requires X-API-Key.
+
+    401 without a valid key, 422 on bad input, 502 if the exchange rejects it.
+    """
     try:
         symbol, side, order_type, quantity, price, stop_price = validate_inputs(
             order.symbol, order.side, order.type, order.quantity, order.price, order.stop_price
@@ -89,9 +125,9 @@ def list_positions():
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
 
-@app.post("/positions/{symbol}/close", tags=["positions"])
+@app.post("/positions/{symbol}/close", tags=["positions"], dependencies=[Depends(require_api_key)])
 def close(symbol: str):
-    """Close one position with a reduce-only market order."""
+    """Close one position with a reduce-only market order. Requires X-API-Key."""
     try:
         return close_position(symbol)
     except ValueError as exc:
