@@ -328,9 +328,36 @@ curl -X POST http://127.0.0.1:8000/orders \
 > Render cannot change the region of an existing service — if one was already created in a US
 > region, delete it and re-create it from the Blueprint.
 
-Two more caveats on the free plan: instances sleep and take roughly 50 seconds to wake on the
-first request, and there is no persistent disk — so `TRADING_BOT_DB` points at `/tmp` and
-history is lost on restart. Attach a disk on a paid plan to keep it.
+Two more caveats on the free plan: instances sleep after about 15 minutes idle, and there is no
+persistent disk — so `TRADING_BOT_DB` points at `/tmp` and history is lost on restart. Attach a
+disk on a paid plan to keep it.
+
+### Cold starts
+
+A slept instance takes roughly a minute to answer its first request. Almost none of that is
+this application — importing the whole app measures **0.55s**, of which `python-binance` is
+0.35s. The rest is Render scheduling and starting the container, which nothing in this repo
+can influence. Shaving imports would buy under a second of a sixty-second wait, so the code is
+left readable instead.
+
+What actually works, in order of effectiveness:
+
+| Approach | Effect | Cost |
+|---|---|---|
+| Paid instance | No spin-down at all | ~$7/month |
+| Scheduled ping (`.github/workflows/keep-warm.yml`) | No cold start during the pinged window | Free |
+| Optimising app imports | ~0.35s of ~60s | Not worth it |
+
+The keep-warm workflow pings `/health` every 10 minutes between 02:00 and 17:59 UTC
+(07:30–23:29 IST), so the instance stays awake through the hours anyone is likely to open the
+link and sleeps overnight. It runs on a window rather than around the clock because Render's
+free tier bills instance-hours against a monthly allowance, and keeping one service awake 24/7
+consumes essentially all of it. Widen the cron to `*/10 * * * *` to trade that allowance for
+constant availability.
+
+Two things to know about it: GitHub's scheduled workflows can run late under load, so an
+occasional gap longer than Render's idle timeout will still produce a cold start; and GitHub
+disables schedules on a repository with no activity for 60 days.
 
 ## Docker
 
