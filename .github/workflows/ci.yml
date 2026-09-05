@@ -40,3 +40,15 @@ jobs:
         # Binance client. This run is also the regression test for that -- if a
         # module ever resolves credentials at import time again, it fails here.
         run: pytest -q
+
+  docker:
+    name: Docker build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build image
+        run: docker build -t trading-bot:ci .
+      - name: Smoke test the image
+        # Proves the entrypoint resolves and the bot.* imports work inside the
+        # image. Needs no credentials, because the client is built lazily.
+        run: docker run --rm trading-bot:ci --help
