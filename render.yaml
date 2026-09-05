@@ -1,0 +1,35 @@
+# Render Blueprint for the REST interface.
+#
+# Deploy: Render dashboard -> New -> Blueprint -> pick this repo. Render reads this
+# file, provisions the service, and asks for the two secret values below.
+#
+# The CLI is unaffected -- this only hosts trading_bot/api.py.
+
+services:
+  - type: web
+    name: binance-futures-bot-api
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt -r requirements-api.txt
+    # cli.py and api.py both import their package as top-level bot.*, so the
+    # process has to start inside trading_bot/.
+    startCommand: cd trading_bot && uvicorn api:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /health
+    envVars:
+      - key: PYTHON_VERSION
+        value: "3.12.6"
+
+      # The free plan has no persistent disk, so history lives in /tmp and is lost
+      # when the instance restarts or spins down. Attach a disk on a paid plan to
+      # keep it.
+      - key: TRADING_BOT_DB
+        value: /tmp/trading_bot.db
+      - key: TRADING_BOT_LOG
+        value: /tmp/trading.log
+
+      # Set in the Render dashboard, never committed. sync:false keeps them out of
+      # this file and out of any preview environment.
+      - key: BINANCE_API_KEY
+        sync: false
+      - key: BINANCE_API_SECRET
+        sync: false
