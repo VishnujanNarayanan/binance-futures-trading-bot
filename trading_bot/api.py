@@ -12,6 +12,7 @@ from typing import Optional
 
 from binance.exceptions import BinanceAPIException
 from fastapi import FastAPI, HTTPException
+from fastapi.responses import RedirectResponse
 from pydantic import BaseModel, Field
 
 from bot.orders import (
@@ -38,6 +39,16 @@ class OrderRequest(BaseModel):
     quantity: float = Field(..., gt=0, examples=[0.01])
     price: Optional[float] = None
     stop_price: Optional[float] = None
+
+
+@app.get("/", include_in_schema=False)
+def root():
+    """Send the bare URL to the docs.
+
+    Without this, opening the deployed hostname returns a bare 404, which is the
+    first thing anyone visiting the service sees.
+    """
+    return RedirectResponse(url="/docs")
 
 
 @app.get("/health", tags=["meta"])
