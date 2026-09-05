@@ -10,6 +10,16 @@ services:
     name: binance-futures-bot-api
     runtime: python
     plan: free
+
+    # MUST NOT be a US region. Binance geo-blocks US datacentres, and every
+    # endpoint that touches the exchange comes back with
+    #   APIError(code=0): Service unavailable from a restricted location
+    # Render defaults to Oregon, which fails exactly this way. Singapore is the
+    # closest non-blocked free region.
+    #
+    # Render cannot change the region of an existing service -- if one was already
+    # created in Oregon, delete it and re-create it from this Blueprint.
+    region: singapore
     buildCommand: pip install -r requirements.txt -r requirements-api.txt
     # cli.py and api.py both import their package as top-level bot.*, so the
     # process has to start inside trading_bot/.
