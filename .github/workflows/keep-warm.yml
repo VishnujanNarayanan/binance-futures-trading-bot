@@ -1,0 +1,53 @@
+name: Keep demo warm
+
+# Render's free plan spins an instance down after ~15 minutes of inactivity, and the
+# next request then pays a cold start of roughly a minute. That is fine for a hobby
+# service and bad for a link on a CV, where the reader assumes a slow page is a broken
+# one.
+#
+# This pings /health often enough that the instance never idles out during the hours
+# someone might actually open the link.
+#
+# WHY A WINDOW AND NOT ALL DAY: Render's free tier bills instance-hours against a
+# monthly allowance, and a service kept awake 24/7 consumes essentially all of it,
+# leaving nothing for any other free service on the account. The window below covers
+# 08:00-23:00 IST. Widen it to "*/10 * * * *" if you would rather spend the whole
+# allowance on this one service.
+#
+# The proper fix is a paid instance, which never spins down. This is a workaround.
+
+on:
+  schedule:
+    # Every 10 minutes, 02:00-17:59 UTC (07:30-23:29 IST).
+    - cron: "*/10 2-17 * * *"
+  workflow_dispatch:
+
+# Never let two pings overlap.
+concurrency:
+  group: keep-warm
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    name: Ping /health
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Wake the service
+        env:
+          # Public URL, so it lives here rather than in a secret. Override with a
+          # repository variable of the same name if the host ever changes.
+          URL: ${{ vars.RENDER_URL || 'https://binance-futures-bot-api.onrender.com' }}
+        run: |
+          # --max-time 180 because a genuine cold start can take a minute or more, and
+          # a ping that gives up early would leave the instance half-started.
+          code=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 180 \
+                 --retry 2 --retry-all-errors --retry-delay 15 "$URL/health")
+          echo "GET $URL/health -> $code"
+
+          # A 404 here is Render's edge reporting no running instance
+          # (x-render-routing: no-server), which is exactly what this job exists to
+          # prevent -- so it is worth surfacing rather than swallowing.
+          if [ "$code" != "200" ]; then
+            echo "::warning::Health check returned $code instead of 200"
+          fi
