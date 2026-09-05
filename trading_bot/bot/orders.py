@@ -2,6 +2,7 @@ import json
 
 from bot.client import get_client, place_futures_order
 from bot.logging_config import logger
+from bot.storage import record_order
 
 
 def get_open_positions():
@@ -39,7 +40,9 @@ def close_position(symbol: str):
         logger.info(f"API Request (CLOSE POSITION - {symbol}): {json.dumps(params)}")
         response = place_futures_order(**params)
         logger.info(f"API Response (CLOSE POSITION - {symbol}): {json.dumps(response)}\n\n")
-        return _format_response(response)
+        formatted = _format_response(response)
+        record_order(params, response=formatted)
+        return formatted
         
     except Exception as e:
         logger.error(f"Error closing position for {symbol}: {e!s}\n\n")
@@ -57,9 +60,12 @@ def place_market_order(symbol: str, side: str, quantity: float):
     try:
         response = place_futures_order(**params)
         logger.info(f"API Response (MARKET): {json.dumps(response)}\n\n")
-        return _format_response(response)
+        formatted = _format_response(response)
+        record_order(params, response=formatted)
+        return formatted
     except Exception as e:
         logger.error(f"API Error (MARKET): {e!s}\n\n")
+        record_order(params, error=str(e))
         raise
 
 def place_limit_order(symbol: str, side: str, quantity: float, price: float):
@@ -76,9 +82,12 @@ def place_limit_order(symbol: str, side: str, quantity: float, price: float):
     try:
         response = place_futures_order(**params)
         logger.info(f"API Response (LIMIT): {json.dumps(response)}\n\n")
-        return _format_response(response)
+        formatted = _format_response(response)
+        record_order(params, response=formatted)
+        return formatted
     except Exception as e:
         logger.error(f"API Error (LIMIT): {e!s}\n\n")
+        record_order(params, error=str(e))
         raise
 
 def place_stop_limit_order(symbol: str, side: str, quantity: float, price: float, stop_price: float):
@@ -96,9 +105,12 @@ def place_stop_limit_order(symbol: str, side: str, quantity: float, price: float
     try:
         response = place_futures_order(**params)
         logger.info(f"API Response (STOP_LIMIT): {json.dumps(response)}\n\n")
-        return _format_response(response)
+        formatted = _format_response(response)
+        record_order(params, response=formatted)
+        return formatted
     except Exception as e:
         logger.error(f"API Error (STOP_LIMIT): {e!s}\n\n")
+        record_order(params, error=str(e))
         raise
 
 def _format_response(response):
