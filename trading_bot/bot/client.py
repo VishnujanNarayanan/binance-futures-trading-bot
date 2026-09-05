@@ -1,7 +1,8 @@
 import os
 import sys
-from dotenv import load_dotenv
+
 from binance.client import Client
+from dotenv import load_dotenv
 
 try:
     import questionary
@@ -25,9 +26,11 @@ def get_binance_client():
             print("\n[API Credentials Required]")
             print("No .env file detected. Please provide your Binance Futures Testnet credentials.")
             api_key = questionary.password("Enter your API Key:").ask()
-            if not api_key: sys.exit(0)
+            if not api_key:
+                sys.exit(0)
             api_secret = questionary.password("Enter your API Secret:").ask()
-            if not api_secret: sys.exit(0)
+            if not api_secret:
+                sys.exit(0)
         else:
             raise ValueError("API credentials (BINANCE_API_KEY, BINANCE_API_SECRET) not found in .env")
 

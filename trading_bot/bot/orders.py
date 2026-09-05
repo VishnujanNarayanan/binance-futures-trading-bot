@@ -1,6 +1,8 @@
 import json
-from bot.client import place_futures_order, get_client
+
+from bot.client import get_client, place_futures_order
 from bot.logging_config import logger
+
 
 def get_open_positions():
     """Fetch all open positions from Binance Futures."""
@@ -10,7 +12,7 @@ def get_open_positions():
         open_positions = [pos for pos in positions if float(pos.get("positionAmt", 0)) != 0]
         return open_positions
     except Exception as e:
-        logger.error(f"Error fetching positions: {str(e)}\n\n")
+        logger.error(f"Error fetching positions: {e!s}\n\n")
         raise
 
 def close_position(symbol: str):
@@ -40,7 +42,7 @@ def close_position(symbol: str):
         return _format_response(response)
         
     except Exception as e:
-        logger.error(f"Error closing position for {symbol}: {str(e)}\n\n")
+        logger.error(f"Error closing position for {symbol}: {e!s}\n\n")
         raise
 
 def place_market_order(symbol: str, side: str, quantity: float):
@@ -57,7 +59,7 @@ def place_market_order(symbol: str, side: str, quantity: float):
         logger.info(f"API Response (MARKET): {json.dumps(response)}\n\n")
         return _format_response(response)
     except Exception as e:
-        logger.error(f"API Error (MARKET): {str(e)}\n\n")
+        logger.error(f"API Error (MARKET): {e!s}\n\n")
         raise
 
 def place_limit_order(symbol: str, side: str, quantity: float, price: float):
@@ -76,7 +78,7 @@ def place_limit_order(symbol: str, side: str, quantity: float, price: float):
         logger.info(f"API Response (LIMIT): {json.dumps(response)}\n\n")
         return _format_response(response)
     except Exception as e:
-        logger.error(f"API Error (LIMIT): {str(e)}\n\n")
+        logger.error(f"API Error (LIMIT): {e!s}\n\n")
         raise
 
 def place_stop_limit_order(symbol: str, side: str, quantity: float, price: float, stop_price: float):
@@ -96,7 +98,7 @@ def place_stop_limit_order(symbol: str, side: str, quantity: float, price: float
         logger.info(f"API Response (STOP_LIMIT): {json.dumps(response)}\n\n")
         return _format_response(response)
     except Exception as e:
-        logger.error(f"API Error (STOP_LIMIT): {str(e)}\n\n")
+        logger.error(f"API Error (STOP_LIMIT): {e!s}\n\n")
         raise
 
 def _format_response(response):
