@@ -1,4 +1,10 @@
 # Development and CI dependencies. Install alongside requirements.txt:
 #   pip install -r requirements.txt -r requirements-dev.txt
-pytest==9.1.1
+
+# Ranged, not pinned: pytest 9 requires Python >= 3.10, and this project supports
+# 3.9. A hard pin here broke the 3.9 CI job at install time.
+pytest>=8.4,<10
+
+# Pinned exactly on purpose -- ruff changes its default rules and its fixes between
+# releases, so an unpinned lint job would start failing on a version bump.
 ruff==0.16.6
