@@ -218,6 +218,7 @@ Credentials are resolved in this order:
 |---|---|---|
 | `BINANCE_API_KEY` | Yes | Binance **Futures Testnet** API key |
 | `BINANCE_API_SECRET` | Yes | Binance **Futures Testnet** API secret |
+| `TRADING_BOT_API_KEY` | For the REST API | Gates the endpoints that can place or close orders |
 | `TRADING_BOT_DB` | No | Order history database path (default `trading_bot.db`) |
 | `TRADING_BOT_LOG` | No | Log file path (default `trading.log`) |
 
@@ -303,6 +304,41 @@ Interactive OpenAPI docs are then at `http://127.0.0.1:8000/docs`.
 | `POST` | `/positions/{symbol}/close` | Close one position, reduce-only |
 | `GET` | `/orders/history` | Local history; `?symbol=` and `?limit=` |
 | `GET` | `/orders/summary` | Per-symbol totals from the SQL view |
+
+### Authentication
+
+Reads are open, so the docs stay useful to anyone who opens them. **Anything that can move
+money — placing an order, closing a position — requires an `X-API-Key` header.**
+
+Generate a key and set it on the service:
+
+```bash
+python -c "import secrets; print(secrets.token_urlsafe(32))"
+export TRADING_BOT_API_KEY=<the generated value>
+```
+
+```bash
+curl -X POST http://127.0.0.1:8000/orders \
+  -H "X-API-Key: $TRADING_BOT_API_KEY" \
+  -H 'Content-Type: application/json' \
+  -d '{"symbol":"BTCUSDT","side":"BUY","type":"MARKET","quantity":0.01}'
+```
+
+In `/docs`, the **Authorize** button sets the header for you.
+
+Three deliberate choices:
+
+- **It fails closed.** If `TRADING_BOT_API_KEY` is unset the service still starts and still
+  serves reads, but every trading request returns `503`. An unconfigured deployment refuses to
+  trade rather than quietly accepting anonymous orders.
+- **Auth is checked before the request body.** An unauthenticated caller gets `401` even for a
+  malformed body, so the schema cannot be probed by watching which payloads return `422`.
+- **Keys are compared with `secrets.compare_digest`**, so response timing cannot be used to
+  guess a key character by character.
+
+Still open by design: `/positions`, `/orders/history` and `/orders/summary` return account
+data without a key. On a testnet account that is a reasonable trade for a browsable demo — but
+it is a choice, not an oversight, and the same dependency would lock them down.
 
 Status codes are meaningful rather than uniform:
 
@@ -487,20 +523,22 @@ SQLite needs no dependency — it is in the Python standard library.
   It is not refreshed afterwards, so an order that later fills or is cancelled elsewhere still
   shows its status at submission time.
 - **No rate limiting or retry logic.**
-- **The REST API is unauthenticated.** It is fine bound to localhost, but it must not be
-  exposed publicly as-is — anyone who can reach it can trade with your key.
+- **Read endpoints expose account data.** `/positions`, `/orders/history` and
+  `/orders/summary` need no key, so anyone with the URL can see positions and order history.
+  Writes are gated; reads are open on purpose so the demo is browsable.
+- **One shared key, no rotation.** A single `TRADING_BOT_API_KEY` gates every write. There is
+  no per-client key, no expiry and no revocation short of changing the value and restarting.
 
 ## Roadmap
 
 - Fetch symbol filters from `futures_exchange_info` and round quantity/price locally.
 - Normalise symbol casing instead of rejecting it.
-- Add authentication to the REST API before it is exposed anywhere public.
 - Reconcile stored order status against the exchange, so history reflects fills after the fact.
 - Add `OCO` and trailing-stop order types.
 
 Done since the first release: lazy client construction, a configurable log path, explicit
 handling of the conditional-order response shape, SQLite order history, a REST interface,
-a container image, and CI.
+a container image, CI, and API-key authentication on the trading endpoints.
 
 ## License
 
