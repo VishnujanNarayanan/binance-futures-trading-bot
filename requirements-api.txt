@@ -1,0 +1,8 @@
+# Dependencies for the optional REST interface (trading_bot/api.py).
+# The CLI does not need these:
+#   pip install -r requirements.txt -r requirements-api.txt
+fastapi>=0.115,<1
+uvicorn[standard]>=0.30,<1
+
+# httpx backs fastapi.testclient.TestClient, which the API tests use.
+httpx>=0.27,<1

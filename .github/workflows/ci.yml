@@ -34,7 +34,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: pip
       - name: Install dependencies
-        run: pip install -r requirements.txt -r requirements-dev.txt
+        run: pip install -r requirements.txt -r requirements-dev.txt -r requirements-api.txt
       - name: Run tests
         # No API key is available in CI, and none is needed: the suite stubs the
         # Binance client. This run is also the regression test for that -- if a
