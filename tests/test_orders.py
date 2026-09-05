@@ -126,3 +126,58 @@ def test_format_response_falls_back_to_conditional_algo_fields():
 def test_format_response_falls_back_to_orig_qty_when_nothing_filled():
     result = _format_response({"orderId": 1, "status": "NEW", "executedQty": "0", "origQty": "0.05"})
     assert result["executedQty"] == "0.05"
+
+
+# --- history recording -------------------------------------------------------
+# Placing an order also writes a local record. These assert the wiring; the
+# storage layer itself is covered in test_storage.py.
+
+def test_a_placed_order_is_recorded_in_history(fake_client):
+    fake_client(order_response={
+        "orderId": 42, "status": "FILLED", "executedQty": "0.01", "avgPrice": "84000.0",
+    })
+    place_market_order("BTCUSDT", "BUY", 0.01)
+
+    from bot.storage import fetch_history
+    rows = fetch_history()
+    assert len(rows) == 1
+    assert rows[0]["symbol"] == "BTCUSDT"
+    assert rows[0]["exchange_order_id"] == "42"
+    assert rows[0]["error"] is None
+
+
+def test_a_rejected_order_is_recorded_with_its_error(fake_client):
+    fake_client(raises=RuntimeError("APIError(code=-4002): Price greater than max price."))
+
+    with pytest.raises(RuntimeError):
+        place_limit_order("BTCUSDT", "SELL", 0.01, 999999.0)
+
+    from bot.storage import fetch_history
+    rows = fetch_history()
+    assert len(rows) == 1
+    assert rows[0]["status"] is None
+    assert "code=-4002" in rows[0]["error"]
+
+
+def test_closing_a_position_is_recorded_as_reduce_only(fake_client):
+    fake_client(positions=[{"symbol": "BTCUSDT", "positionAmt": "0.01"}])
+    close_position("BTCUSDT")
+
+    from bot.storage import fetch_history
+    row = fetch_history()[0]
+    assert row["reduce_only"] == 1
+    assert row["side"] == "SELL"
+
+
+def test_an_unwritable_history_database_does_not_break_the_order(fake_client, monkeypatch):
+    # Bookkeeping is best-effort. If the history database cannot be opened at all,
+    # the order still went to the exchange, so the caller must still get its result
+    # rather than an exception about SQLite.
+    monkeypatch.setenv("TRADING_BOT_DB", "/nonexistent-directory/history.db")
+    fake_client(order_response={
+        "orderId": 99, "status": "NEW", "executedQty": "0", "origQty": "0.01", "avgPrice": "0",
+    })
+
+    result = place_market_order("BTCUSDT", "BUY", 0.01)
+
+    assert result["orderId"] == 99
