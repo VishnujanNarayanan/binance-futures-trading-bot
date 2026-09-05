@@ -14,6 +14,7 @@ from typing import Optional
 
 from binance.exceptions import BinanceAPIException
 from fastapi import Depends, FastAPI, HTTPException, Security
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.security import APIKeyHeader
 from pydantic import BaseModel, Field
@@ -37,6 +38,28 @@ app = FastAPI(
     ),
     version="1.1.0",
 )
+
+# The static docs on GitHub Pages are served from a different origin, so the browser
+# needs permission before its JavaScript may call this API. Listed explicitly rather
+# than "*": this API can place trades, so only the pages known to front it are allowed.
+# allow_credentials stays False -- auth is a header, not a cookie, and pairing
+# credentials with a wildcard is the classic way to make CORS dangerous.
+_CORS_ORIGINS = [
+    origin.strip()
+    for origin in os.getenv(
+        "TRADING_BOT_CORS_ORIGINS", "https://vishnujannarayanan.github.io"
+    ).split(",")
+    if origin.strip()
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=_CORS_ORIGINS,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["X-API-Key", "Content-Type"],
+)
+
 
 # auto_error=False so a missing header reaches require_api_key and gets the same 401
 # as a wrong one. Letting FastAPI raise its own 403 first would tell an attacker
