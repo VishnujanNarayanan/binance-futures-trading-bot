@@ -43,3 +43,11 @@ services:
         sync: false
       - key: BINANCE_API_SECRET
         sync: false
+
+      # Gates the endpoints that can move money. Generate with:
+      #   python -c "import secrets; print(secrets.token_urlsafe(32))"
+      # If this is unset the service still starts and still serves reads, but every
+      # trading request returns 503 -- it fails closed rather than accepting
+      # anonymous orders.
+      - key: TRADING_BOT_API_KEY
+        sync: false
