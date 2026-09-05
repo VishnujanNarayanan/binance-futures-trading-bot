@@ -1,8 +1,8 @@
 <h1 align="center">Binance Futures Testnet Trading Bot</h1>
 
 <p align="center">
-  A USDT-M futures order client with two interfaces over one execution core —<br>
-  an arrow-key interactive menu for humans, and argparse flags for scripts.
+  A USDT-M futures order client with three interfaces over one execution core —<br>
+  an arrow-key interactive menu for humans, argparse flags for scripts, and a REST API.
 </p>
 
 <p align="center">
@@ -10,8 +10,14 @@
   <img alt="python-binance" src="https://img.shields.io/badge/python--binance-1.0.36-F0B90B?logo=binance&logoColor=black"/>
   <img alt="Rich" src="https://img.shields.io/badge/Rich-13.7-009485"/>
   <img alt="Questionary" src="https://img.shields.io/badge/Questionary-2.0-6E56CF"/>
+  <img alt="FastAPI" src="https://img.shields.io/badge/FastAPI-REST_API-009688?logo=fastapi&logoColor=white"/>
+  <img alt="SQLite" src="https://img.shields.io/badge/SQLite-order_history-003B57?logo=sqlite&logoColor=white"/>
+  <img alt="Docker" src="https://img.shields.io/badge/Docker-containerised-2496ED?logo=docker&logoColor=white"/>
+  <img alt="Tests" src="https://img.shields.io/badge/tests-63_passing-2ea44f"/>
   <img alt="Environment" src="https://img.shields.io/badge/Environment-Testnet_only-F0B90B"/>
   <img alt="License" src="https://img.shields.io/badge/License-MIT-750014"/>
+  <br>
+  <a href="https://github.com/VishnujanNarayanan/binance-futures-trading-bot/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/VishnujanNarayanan/binance-futures-trading-bot/actions/workflows/ci.yml/badge.svg"/></a>
   <br>
   <a href="https://github.com/VishnujanNarayanan"><img alt="GitHub" src="https://img.shields.io/badge/GitHub-VishnujanNarayanan-181717?logo=github&logoColor=white&style=for-the-badge"/></a>
   <a href="https://www.linkedin.com/in/vishnujan-narayanan"><img alt="LinkedIn" src="https://img.shields.io/badge/LinkedIn-Vishnujan_Narayanan-0A66C2?logo=data%3Aimage%2Fsvg%2Bxml%3Bbase64%2CPHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNCAyNCI%2BPHBhdGggZmlsbD0id2hpdGUiIGQ9Ik0yMC40NDcgMjAuNDUyaC0zLjU1NHYtNS41NjljMC0xLjMyOC0uMDI3LTMuMDM3LTEuODUyLTMuMDM3LTEuODUzIDAtMi4xMzYgMS40NDUtMi4xMzYgMi45Mzl2NS42NjdIOS4zNTFWOWgzLjQxNHYxLjU2MWguMDQ2Yy40NzctLjkgMS42MzctMS44NSAzLjM3LTEuODUgMy42MDEgMCA0LjI2NyAyLjM3IDQuMjY3IDUuNDU1djYuMjg2ek01LjMzNyA3LjQzM2MtMS4xNDQgMC0yLjA2My0uOTI2LTIuMDYzLTIuMDY1IDAtMS4xMzguOTItMi4wNjMgMi4wNjMtMi4wNjMgMS4xNCAwIDIuMDY0LjkyNSAyLjA2NCAyLjA2MyAwIDEuMTM5LS45MjUgMi4wNjUtMi4wNjQgMi4wNjV6bTEuNzgyIDEzLjAxOUgzLjU1NVY5aDMuNTY0djExLjQ1MnpNMjIuMjI1IDBIMS43NzFDLjc5MiAwIDAgLjc3NCAwIDEuNzI5djIwLjU0MkMwIDIzLjIyNy43OTIgMjQgMS43NzEgMjRoMjAuNDUxQzIzLjIgMjQgMjQgMjMuMjI3IDI0IDIyLjI3MVYxLjcyOUMyNCAuNzc0IDIzLjIgMCAyMi4yMjIgMGguMDAzeiIvPjwvc3ZnPg%3D%3D&logoColor=white&style=for-the-badge"/></a>
@@ -24,6 +30,9 @@
   🧠 <a href="#design-decisions">Design Decisions</a> ·
   ⚡ <a href="#installation">Installation</a> ·
   🧑‍💻 <a href="#usage">Usage</a> ·
+  🌐 <a href="#rest-api">REST API</a> ·
+  🐳 <a href="#docker">Docker</a> ·
+  🧪 <a href="#testing">Testing</a> ·
   🖼️ <a href="#screenshots">Screenshots</a> ·
   ⚠️ <a href="#limitations">Limitations</a>
 </p>
@@ -37,11 +46,13 @@ where a missing `timeInForce`, a lowercase symbol, or a `price` on a market orde
 only after the request leaves the machine. Debugging that from an exchange error code is slow.
 
 This bot puts a validation layer in front of the API, so malformed orders fail locally with a
-message that names the actual problem, and wraps the whole thing in two interfaces that share
-one execution path: a guided interactive menu, and flag-driven invocation for automation.
+message that names the actual problem, and wraps the whole thing in three interfaces that share
+one execution path: a guided interactive menu, flag-driven invocation for automation, and an
+HTTP API.
 
-Every request and every response is written to a structured log, so what was sent and what came
-back is always recoverable after the fact.
+Every request and every response is written to a structured log **and** recorded in a local
+SQLite database — including rejected orders — so what was sent and what happened to it is
+always recoverable after the fact.
 
 ## Features
 
@@ -53,28 +64,38 @@ back is always recoverable after the fact.
 - **Headless mode** — full `argparse` interface with non-zero exit codes on failure.
 - **Pre-flight validation** — symbol casing, side, order type, positive quantity, and
   conditional price/stop-price requirements checked before the API call.
+- **Order history** — every attempt, filled or rejected, persisted to SQLite with a
+  `--action history` view and a per-symbol `--action summary` built on a SQL view.
+- **REST API** — the same execution core exposed over HTTP via FastAPI, with OpenAPI docs.
 - **Structured logging** — every request and response serialised as JSON to `trading.log`.
 - **Credential fallback** — reads `.env`, and if absent prompts interactively rather than
   crashing.
+- **Containerised** — a Dockerfile that runs as a non-root user, with logs on a volume.
+- **Tested and gated** — 63 tests, plus CI running lint, the suite on Python 3.9 and 3.12,
+  and a Docker image build on every pull request.
 
 ## Architecture
 
-Both entry paths converge on `execute_order`, so validation, logging, and error handling behave
-identically whether a human or a script drove it.
+All three entry paths converge on the same validated core, so validation, logging, history
+recording and error handling behave identically whether a human, a script or an HTTP client
+drove it.
 
 ```mermaid
 flowchart TB
     A["Interactive menu<br/>questionary"] --> E
     B["Headless flags<br/>argparse"] --> E
+    H["REST API<br/>FastAPI"] --> V
     E["execute_order()"] --> V["validators.validate_inputs<br/>local pre-flight"]
-    V -->|invalid| X["ValueError -> exit 1"]
+    V -->|invalid| X["ValueError -> exit 1 / HTTP 422"]
     V -->|valid| O["orders.place_*_order"]
     O --> L1["logger: API Request JSON"]
     O --> C["client.futures_create_order"]
     C --> API[("Binance Futures Testnet<br/>testnet.binancefuture.com/fapi")]
     API --> L2["logger: API Response JSON"]
-    L2 --> R["Rich response panel"]
-    C -->|BinanceAPIException| L3["logger: API Error"] --> R
+    L2 --> D[("SQLite<br/>orders table")]
+    L2 --> R["Rich panel / JSON response"]
+    C -->|BinanceAPIException| L3["logger: API Error"] --> D
+    L3 --> R
 ```
 
 ### Module responsibilities
@@ -86,6 +107,9 @@ flowchart TB
 | `trading_bot/bot/orders.py` | Order payload assembly, position listing, position closing |
 | `trading_bot/bot/validators.py` | Pure input validation, no I/O |
 | `trading_bot/bot/logging_config.py` | Single named logger writing `trading.log` |
+| `trading_bot/bot/storage.py` | SQLite order history: record, query, aggregate |
+| `trading_bot/bot/schema.sql` | Table, CHECK constraints, indexes, `symbol_activity` view |
+| `trading_bot/api.py` | FastAPI app exposing the same core over HTTP |
 
 ## Design Decisions
 
@@ -113,20 +137,46 @@ library's testnet handling alone.
 **Requests are logged before responses.** The request JSON is written before the call is made,
 so an order that times out still leaves a record of what was attempted.
 
+**The client is built lazily.** `get_client()` constructs on first use and caches, rather than
+running at import time. Importing the package therefore resolves no credentials and touches no
+network, which is what makes the test suite, the container smoke test and `GET /health` all
+work without an API key.
+
+**Bookkeeping is best-effort and can never break an order.** `record_order` swallows and logs
+its own failures. A successfully placed order must not turn into a SQLite exception on the
+caller's side — there is a test that an unwritable database still returns the order result.
+
+**Rejected orders get a history row too.** They are stored with the exchange error and a null
+order id. A failed attempt being simply absent from the record was the main thing worth fixing.
+
+**Constraints live in the schema, not only in Python.** `side`, `order_type` and
+`quantity > 0` are `CHECK` constraints, so a nonsense row cannot be written even by hand.
+Note that `STOP_LIMIT` is submitted to Binance as type `STOP`, so the wire value is mapped back
+to the bot's own vocabulary before it is stored.
+
 ## Project Structure
 
 ```
 Trading_Bot/
 ├── trading_bot/
 │   ├── cli.py                 # Entry point: interactive menu + argparse
+│   ├── api.py                 # Entry point: FastAPI REST interface
 │   └── bot/
-│       ├── client.py          # Testnet client, credential resolution
+│       ├── client.py          # Testnet client, lazy credential resolution
 │       ├── orders.py          # MARKET / LIMIT / STOP_LIMIT, positions, close
 │       ├── validators.py      # Pure pre-flight validation
+│       ├── storage.py         # SQLite order history
+│       ├── schema.sql         # Table, constraints, indexes, activity view
 │       └── logging_config.py  # Named logger -> trading.log
+├── tests/                     # 63 pytest tests, no network or API key needed
+├── .github/workflows/ci.yml   # Lint, tests on 3.9 + 3.12, Docker build
+├── Dockerfile
+├── render.yaml                # Render Blueprint for the REST API
 ├── screenshots/               # CLI captures used below
 ├── sample_trading.log         # Recorded request/response/error log
-├── requirements.txt
+├── requirements.txt           # CLI runtime
+├── requirements-api.txt       # REST interface
+├── requirements-dev.txt       # pytest + ruff
 └── README.md
 ```
 
@@ -148,6 +198,13 @@ source .venv/bin/activate      # Linux / macOS
 pip install -r requirements.txt
 ```
 
+Optional extras:
+
+```bash
+pip install -r requirements-api.txt      # REST interface
+pip install -r requirements-dev.txt      # pytest + ruff
+```
+
 ## Configuration
 
 Credentials are resolved in this order:
@@ -160,6 +217,8 @@ Credentials are resolved in this order:
 |---|---|---|
 | `BINANCE_API_KEY` | Yes | Binance **Futures Testnet** API key |
 | `BINANCE_API_SECRET` | Yes | Binance **Futures Testnet** API secret |
+| `TRADING_BOT_DB` | No | Order history database path (default `trading_bot.db`) |
+| `TRADING_BOT_LOG` | No | Log file path (default `trading.log`) |
 
 ```env
 BINANCE_API_KEY=your_testnet_api_key_here
@@ -177,8 +236,8 @@ are separate from live Binance keys.
 python3 trading_bot/cli.py
 ```
 
-Presents a menu with four options: place a new order, view open positions, close a position,
-and exit. Order entry collects each parameter in turn, prints a summary table, and requires
+Presents a menu with six options: place a new order, view open positions, close a position,
+view order history, view an activity summary, and exit. Order entry collects each parameter in turn, prints a summary table, and requires
 confirmation before sending.
 
 ### Headless mode
@@ -200,19 +259,117 @@ python3 trading_bot/cli.py --action positions
 
 # Close a position
 python3 trading_bot/cli.py --action close --symbol BTCUSDT
+
+# Order history (newest first), optionally filtered
+python3 trading_bot/cli.py --action history
+python3 trading_bot/cli.py --action history --symbol BTCUSDT --limit 50
+
+# Per-symbol activity totals
+python3 trading_bot/cli.py --action summary
 ```
 
 | Flag | Type | Required for |
 |---|---|---|
-| `--action` | `order` \| `positions` \| `close` | defaults to `order` |
+| `--action` | `order` \| `positions` \| `close` \| `history` \| `summary` | defaults to `order` |
 | `--symbol` | string | all order actions and `close` |
 | `--side` | `BUY` \| `SELL` (case-insensitive) | orders |
 | `--type` | `MARKET` \| `LIMIT` \| `STOP_LIMIT` | orders |
 | `--quantity` | float > 0 | orders |
 | `--price` | float > 0 | `LIMIT`, `STOP_LIMIT` |
 | `--stop_price` | float > 0 | `STOP_LIMIT` |
+| `--limit` | int | `history` (default 20) |
 
 The bot must be run from the project root — `cli.py` imports `bot.*` as a top-level package.
+
+## REST API
+
+The same execution core over HTTP. An order placed here is validated, logged and recorded
+exactly as one placed from the terminal — `api.py` calls into `bot.validators` and `bot.orders`
+rather than reimplementing anything.
+
+```bash
+pip install -r requirements.txt -r requirements-api.txt
+cd trading_bot && uvicorn api:app --reload
+```
+
+Interactive OpenAPI docs are then at `http://127.0.0.1:8000/docs`.
+
+| Method | Path | Description |
+|---|---|---|
+| `GET` | `/health` | Liveness. Touches nothing and needs no credentials |
+| `POST` | `/orders` | Validate and place an order |
+| `GET` | `/positions` | Open positions, from the exchange |
+| `POST` | `/positions/{symbol}/close` | Close one position, reduce-only |
+| `GET` | `/orders/history` | Local history; `?symbol=` and `?limit=` |
+| `GET` | `/orders/summary` | Per-symbol totals from the SQL view |
+
+Status codes are meaningful rather than uniform:
+
+- **422** — local validation failed, so nothing was sent to the exchange
+- **404** — closing a symbol with no open position
+- **502** — the exchange rejected the request
+
+```bash
+curl -X POST http://127.0.0.1:8000/orders \
+  -H 'Content-Type: application/json' \
+  -d '{"symbol":"BTCUSDT","side":"BUY","type":"MARKET","quantity":0.01}'
+```
+
+### Deploying it
+
+`render.yaml` is a Render Blueprint: **New → Blueprint → pick this repo**, then set
+`BINANCE_API_KEY` and `BINANCE_API_SECRET` when prompted.
+
+Two caveats on the free plan: instances sleep and take roughly 50 seconds to wake on the first
+request, and there is no persistent disk — so `TRADING_BOT_DB` points at `/tmp` and history is
+lost on restart. Attach a disk on a paid plan to keep it.
+
+## Docker
+
+```bash
+docker build -t trading-bot .
+
+docker run --rm -it --env-file .env trading-bot                     # interactive menu
+docker run --rm --env-file .env trading-bot --action positions      # headless
+docker run --rm --env-file .env -v "$PWD/logs:/app/logs" trading-bot --action history
+```
+
+Interactive mode needs a TTY, hence `-it`. The image runs as a non-root user, writes logs to
+`/app/logs` (declared as a volume), and `.dockerignore` excludes `.env` so credentials cannot
+be baked into a layer.
+
+## Testing
+
+```bash
+pip install -r requirements.txt -r requirements-dev.txt -r requirements-api.txt
+pytest          # 63 passed
+ruff check trading_bot tests
+```
+
+The suite needs **no API key and no network**: a `FakeClient` fixture stands in for the Binance
+client, records the payloads it was handed, and replays canned responses. Each test also gets
+its own throwaway SQLite database.
+
+| File | Covers |
+|---|---|
+| `tests/test_validators.py` | Normalisation and every rejection branch |
+| `tests/test_orders.py` | Payload assembly, close derivation, response formatting, history wiring |
+| `tests/test_storage.py` | Schema idempotency, CHECK constraints, view aggregation, resilience |
+| `tests/test_client.py` | Lazy construction, caching, credential failure |
+| `tests/test_api.py` | Every endpoint, and that the API shares the CLI's validator |
+
+### Continuous integration
+
+`.github/workflows/ci.yml` runs on every push and pull request:
+
+| Job | What |
+|---|---|
+| Lint | `ruff check trading_bot tests` |
+| Test | `pytest` on Python 3.9 and 3.12 |
+| Docker build | Builds the image and runs it with `--help` |
+
+The ruff rule set is pinned in `pyproject.toml` on purpose — ruff changes its defaults between
+releases, so without pinning a local run and a CI run would enforce different things.
 
 ## Screenshots
 
@@ -275,32 +432,40 @@ algo order with an `algoId` rather than an `orderId`.
 | `python-dotenv` | Loads credentials from `.env` |
 | `questionary` | Arrow-key selection, confirmations, masked credential input |
 | `rich` | Tables, panels, and status spinners in the terminal |
+| `fastapi` + `uvicorn` | REST interface (optional, `requirements-api.txt`) |
+| `pytest` + `ruff` | Tests and linting (optional, `requirements-dev.txt`) |
+
+SQLite needs no dependency — it is in the Python standard library.
 
 ## Limitations
 
 - **Testnet only.** The endpoint is hardcoded to `testnet.binancefuture.com`; there is no
   live-trading path, by design.
-- **The client is constructed at import time.** `client = get_binance_client()` runs on module
-  import, so importing `bot.client` triggers credential resolution as a side effect.
-- **Working directory matters.** Imports assume the process starts at the project root.
-- **`trading.log` path is relative** to the working directory, so logs can land in different
-  places depending on where the bot is launched.
+- **Working directory matters.** `cli.py` and `api.py` import their package as top-level
+  `bot.*`, so the process must start inside `trading_bot/`. The Dockerfile and `render.yaml`
+  both handle this; a manual run has to.
 - **No quantity or price precision handling.** Binance's per-symbol tick and lot sizes are not
   consulted, so precision errors surface as exchange rejections rather than local ones.
 - **Validation rejects lowercase symbols** rather than normalising them, unlike `side` and
   `type`, which are upper-cased for the caller.
-- **`STOP_LIMIT` responses are shaped differently** from regular orders — `execute_order` reads
-  `orderId`, which is absent on conditional algo responses.
+- **Order history is local, not reconciled.** It records what this bot sent and what came back.
+  It is not refreshed afterwards, so an order that later fills or is cancelled elsewhere still
+  shows its status at submission time.
 - **No rate limiting or retry logic.**
+- **The REST API is unauthenticated.** It is fine bound to localhost, but it must not be
+  exposed publicly as-is — anyone who can reach it can trade with your key.
 
 ## Roadmap
 
 - Fetch symbol filters from `futures_exchange_info` and round quantity/price locally.
 - Normalise symbol casing instead of rejecting it.
-- Lazy client construction so importing the package has no side effects.
-- Handle the conditional-order response shape explicitly in `execute_order`.
-- Make the log path configurable.
+- Add authentication to the REST API before it is exposed anywhere public.
+- Reconcile stored order status against the exchange, so history reflects fills after the fact.
 - Add `OCO` and trailing-stop order types.
+
+Done since the first release: lazy client construction, a configurable log path, explicit
+handling of the conditional-order response shape, SQLite order history, a REST interface,
+a container image, and CI.
 
 ## License
 
