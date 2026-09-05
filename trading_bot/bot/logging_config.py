@@ -1,6 +1,7 @@
 import logging
 import os
 
+
 def setup_logger():
     logger = logging.getLogger("trading_bot")
     if not logger.handlers:

@@ -1,15 +1,11 @@
 import argparse
 import sys
+
 from binance.exceptions import BinanceAPIException
-from bot.validators import validate_inputs
-from bot.orders import (
-    place_market_order, 
-    place_limit_order, 
-    place_stop_limit_order, 
-    get_open_positions, 
-    close_position
-)
+
 from bot.logging_config import logger
+from bot.orders import close_position, get_open_positions, place_limit_order, place_market_order, place_stop_limit_order
+from bot.validators import validate_inputs
 
 try:
     import questionary
@@ -23,7 +19,7 @@ except ImportError:
 
 def display_positions():
     """Fetches and displays open positions in a table."""
-    with console.status("[bold green]Fetching open positions...") as status:
+    with console.status("[bold green]Fetching open positions..."):
         positions = get_open_positions()
     
     if not positions:
@@ -57,7 +53,7 @@ def display_positions():
 
 def handle_close_position_interactive():
     """Interactive flow to close an open position."""
-    with console.status("[bold green]Fetching open positions...") as status:
+    with console.status("[bold green]Fetching open positions..."):
         positions = get_open_positions()
     
     if not positions:
@@ -70,12 +66,14 @@ def handle_close_position_interactive():
         choices=choices
     ).ask()
     
-    if not symbol: return
+    if not symbol:
+    
+        return
     
     confirm = questionary.confirm(f"Are you sure you want to market close {symbol}?").ask()
     if confirm:
         try:
-            with console.status(f"[bold red]Closing position {symbol}...") as status:
+            with console.status(f"[bold red]Closing position {symbol}..."):
                 result = close_position(symbol)
             
             res_table = Table(show_header=False, box=None)
@@ -87,31 +85,35 @@ def handle_close_position_interactive():
             console.print(Panel(res_table, title="Close Response", border_style="green"))
             console.print(f"[bold green]Successfully closed {symbol}[/bold green]\n")
         except Exception as e:
-            console.print(f"[bold red]Error closing position:[/bold red] {str(e)}")
+            console.print(f"[bold red]Error closing position:[/bold red] {e!s}")
 
 def get_order_inputs_interactive():
     """Prompts for order details and returns a namespace."""
     symbol = questionary.text("Enter Trading Symbol (e.g., BTCUSDT):", default="BTCUSDT").ask()
-    if symbol is None: return None
+    if symbol is None:
+        return None
     symbol = symbol.strip().upper()
     
     side = questionary.select(
         "Select Order Side:",
         choices=["BUY", "SELL"]
     ).ask()
-    if side is None: return None
+    if side is None:
+        return None
     
     order_type = questionary.select(
         "Select Order Type:",
         choices=["MARKET", "LIMIT", "STOP_LIMIT"]
     ).ask()
-    if order_type is None: return None
+    if order_type is None:
+        return None
     
     quantity_str = questionary.text(
         "Enter Order Quantity:",
         validate=lambda text: True if text.replace('.','',1).isdigit() and float(text) > 0 else "Please enter a positive number"
     ).ask()
-    if quantity_str is None: return None
+    if quantity_str is None:
+        return None
     quantity = float(quantity_str)
     
     price = None
@@ -120,7 +122,8 @@ def get_order_inputs_interactive():
             "Enter Limit Price:",
             validate=lambda text: True if text.replace('.','',1).isdigit() and float(text) > 0 else "Please enter a positive number"
         ).ask()
-        if price_str is None: return None
+        if price_str is None:
+            return None
         price = float(price_str)
         
     stop_price = None
@@ -129,7 +132,8 @@ def get_order_inputs_interactive():
             "Enter Stop Price:",
             validate=lambda text: True if text.replace('.','',1).isdigit() and float(text) > 0 else "Please enter a positive number"
         ).ask()
-        if stop_price_str is None: return None
+        if stop_price_str is None:
+            return None
         stop_price = float(stop_price_str)
         
     return argparse.Namespace(
@@ -211,7 +215,7 @@ def main():
             try:
                 execute_close(args.symbol)
             except Exception as e:
-                console.print(f"[bold red]Error:[/bold red] {str(e)}")
+                console.print(f"[bold red]Error:[/bold red] {e!s}")
                 sys.exit(1)
         else:
             # Manual check for required args if running in CLI mode for orders
@@ -231,7 +235,7 @@ def execute_order(args):
             args.symbol, args.side, args.type, args.quantity, args.price, args.stop_price
         )
         
-        with console.status("[bold green]Connecting to Binance Testnet & Placing order...") as status:
+        with console.status("[bold green]Connecting to Binance Testnet & Placing order..."):
             # Place order
             if order_type == "MARKET":
                 result = place_market_order(symbol, side, quantity)
@@ -254,23 +258,26 @@ def execute_order(args):
         console.print("[bold green]FINAL STATUS: SUCCESS[/bold green]\n")
 
     except ValueError as ve:
-        console.print(f"[bold red]Validation Error:[/bold red] {str(ve)}")
+        console.print(f"[bold red]Validation Error:[/bold red] {ve!s}")
         console.print("[bold red]FINAL STATUS: FAILURE[/bold red]\n")
-        logger.error(f"Validation Error: {str(ve)}\n\n")
-        if len(sys.argv) > 1: sys.exit(1)
+        logger.error(f"Validation Error: {ve!s}\n\n")
+        if len(sys.argv) > 1:
+            sys.exit(1)
     except BinanceAPIException as bae:
         console.print(f"[bold red]Binance API Error:[/bold red] {bae.message} (Code: {bae.status_code})")
         console.print("[bold red]FINAL STATUS: FAILURE[/bold red]\n")
-        if len(sys.argv) > 1: sys.exit(1)
+        if len(sys.argv) > 1:
+            sys.exit(1)
     except Exception as e:
-        console.print(f"[bold red]Unexpected Error:[/bold red] {str(e)}")
+        console.print(f"[bold red]Unexpected Error:[/bold red] {e!s}")
         console.print("[bold red]FINAL STATUS: FAILURE[/bold red]\n")
-        logger.error(f"Unexpected Error: {str(e)}\n\n")
-        if len(sys.argv) > 1: sys.exit(1)
+        logger.error(f"Unexpected Error: {e!s}\n\n")
+        if len(sys.argv) > 1:
+            sys.exit(1)
 
 def execute_close(symbol):
     """Core logic to execute a position close."""
-    with console.status(f"[bold red]Closing position {symbol}...") as status:
+    with console.status(f"[bold red]Closing position {symbol}..."):
         result = close_position(symbol)
     
     res_table = Table(show_header=False, box=None)
