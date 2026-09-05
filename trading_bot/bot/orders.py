@@ -1,11 +1,11 @@
 import json
-from bot.client import place_futures_order, client
+from bot.client import place_futures_order, get_client
 from bot.logging_config import logger
 
 def get_open_positions():
     """Fetch all open positions from Binance Futures."""
     try:
-        positions = client.futures_position_information()
+        positions = get_client().futures_position_information()
         # Filter only positions with non-zero quantity
         open_positions = [pos for pos in positions if float(pos.get("positionAmt", 0)) != 0]
         return open_positions
