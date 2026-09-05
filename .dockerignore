@@ -1,0 +1,24 @@
+.git/
+.github/
+.venv/
+venv/
+env/
+__pycache__/
+*.py[cod]
+
+# Credentials must never reach an image layer.
+.env
+
+tests/
+screenshots/
+*.log
+*.docx
+*.db
+
+# Personal career material, not application code.
+bullet_extract*.yaml
+resume_extract*.yaml
+
+Dockerfile
+.dockerignore
+README.md
