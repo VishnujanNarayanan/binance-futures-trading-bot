@@ -15,7 +15,7 @@ sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent.parent / "trading
 
 from api import app
 
-API_URL = os.getenv("TRADING_BOT_PUBLIC_URL", "https://binance-futures-bot-api.onrender.com")
+API_URL = os.getenv("TRADING_BOT_PUBLIC_URL", "https://binance-futures-bot-api-giyj.onrender.com")
 
 INDEX = """<!doctype html>
 <html lang="en">

@@ -37,7 +37,7 @@ jobs:
         env:
           # Public URL, so it lives here rather than in a secret. Override with a
           # repository variable of the same name if the host ever changes.
-          URL: ${{ vars.RENDER_URL || 'https://binance-futures-bot-api.onrender.com' }}
+          URL: ${{ vars.RENDER_URL || 'https://binance-futures-bot-api-giyj.onrender.com' }}
         run: |
           # --max-time 180 because a genuine cold start can take a minute or more, and
           # a ping that gives up early would leave the instance half-started.

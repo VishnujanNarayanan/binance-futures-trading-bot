@@ -7,7 +7,10 @@
 
 services:
   - type: web
-    name: binance-futures-bot-api
+    # Must match the LIVE service. Render appended -giyj because the original name
+    # was still held by the suspended first attempt; a Blueprint sync matches on this
+    # name, so leaving the old one here would make Render create a third service.
+    name: binance-futures-bot-api-giyj
     runtime: python
     plan: free
 
