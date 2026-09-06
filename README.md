@@ -41,6 +41,20 @@
 
 ---
 
+## Live
+
+| | |
+|---|---|
+| **API documentation** | <https://vishnujannarayanan.github.io/binance-futures-trading-bot/> |
+| **Live API** | <https://binance-futures-bot-api-giyj.onrender.com> |
+
+The documentation is static and loads instantly. The API runs on a free instance that sleeps
+after about 15 minutes idle, so its first request can take ~45 seconds while it wakes — it is
+starting, not broken. Reads need no credentials; placing or closing an order needs an
+`X-API-Key`.
+
+---
+
 ## Why this project exists
 
 Placing a futures order through a raw API client means hand-assembling a parameter dictionary
@@ -356,7 +370,8 @@ curl -X POST http://127.0.0.1:8000/orders \
 
 ### Published API docs
 
-**<https://vishnujannarayanan.github.io/binance-futures-trading-bot/>**
+**<https://vishnujannarayanan.github.io/binance-futures-trading-bot/>** — backed by the live
+API at **<https://binance-futures-bot-api-giyj.onrender.com>**.
 
 GitHub Pages serves static files and cannot run FastAPI, so `scripts/build_docs.py` dumps the
 OpenAPI schema at build time and renders it with a standalone Swagger UI. The result loads
