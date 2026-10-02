@@ -21,10 +21,18 @@ def configured_api_key(monkeypatch):
     monkeypatch.setenv("TRADING_BOT_API_KEY", API_KEY)
 
 
-def test_health_needs_no_credentials_and_no_exchange():
-    response = client.get("/health")
+@pytest.mark.parametrize("path", ["/status", "/health"])
+def test_liveness_needs_no_credentials_and_no_exchange(path):
+    response = client.get(path)
     assert response.status_code == 200
     assert response.json() == {"status": "ok"}
+
+
+def test_health_is_hidden_from_the_docs():
+    # uBlock Origin blocks ||onrender.com/health, so the docs must not offer it.
+    paths = client.get("/openapi.json").json()["paths"]
+    assert "/status" in paths
+    assert "/health" not in paths
 
 
 def test_placing_a_market_order_returns_the_formatted_response(fake_client):
@@ -209,7 +217,7 @@ def test_trading_is_disabled_when_no_key_is_configured(fake_client, monkeypatch)
     assert stub.calls == []
 
 
-@pytest.mark.parametrize("path", ["/health", "/orders/history", "/orders/summary", "/positions"])
+@pytest.mark.parametrize("path", ["/status", "/orders/history", "/orders/summary", "/positions"])
 def test_read_endpoints_stay_open(path, fake_client):
     fake_client(positions=[])
     assert client.get(path).status_code == 200
@@ -257,5 +265,5 @@ def test_an_unknown_origin_is_not_granted_access():
 def test_credentials_are_not_allowed_cross_origin():
     # Auth here is a header, not a cookie. Allowing credentials would let a browser
     # attach ambient auth to cross-origin calls, which is how CORS gets dangerous.
-    response = client.get("/health", headers={"Origin": "https://vishnujannarayanan.github.io"})
+    response = client.get("/status", headers={"Origin": "https://vishnujannarayanan.github.io"})
     assert response.headers.get("access-control-allow-credentials") != "true"
