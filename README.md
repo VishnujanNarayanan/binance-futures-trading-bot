@@ -155,7 +155,7 @@ so an order that times out still leaves a record of what was attempted.
 
 **The client is built lazily.** `get_client()` constructs on first use and caches, rather than
 running at import time. Importing the package therefore resolves no credentials and touches no
-network, which is what makes the test suite, the container smoke test and `GET /health` all
+network, which is what makes the test suite, the container smoke test and `GET /status` all
 work without an API key.
 
 **Bookkeeping is best-effort and can never break an order.** `record_order` swallows and logs
@@ -314,12 +314,16 @@ Interactive OpenAPI docs are then at `http://127.0.0.1:8000/docs`.
 
 | Method | Path | Description |
 |---|---|---|
-| `GET` | `/health` | Liveness. Touches nothing and needs no credentials |
+| `GET` | `/status` | Liveness. Touches nothing and needs no credentials |
 | `POST` | `/orders` | Validate and place an order |
 | `GET` | `/positions` | Open positions, from the exchange |
 | `POST` | `/positions/{symbol}/close` | Close one position, reduce-only |
 | `GET` | `/orders/history` | Local history; `?symbol=` and `?limit=` |
 | `GET` | `/orders/summary` | Per-symbol totals from the SQL view |
+
+`GET /health` returns the same thing but is left out of the docs. Render's health check and
+the keep-warm workflow call it server-side, but uBlock Origin's default filter lists block
+`||onrender.com/health`, so "Try it out" on it would fail for anyone running that extension.
 
 ### Authentication
 
