@@ -107,11 +107,19 @@ def root():
     return RedirectResponse(url="/docs")
 
 
-@app.get("/health", tags=["meta"])
-def health():
+@app.get("/status", tags=["meta"])
+def status():
     """Liveness check. Deliberately does not touch the exchange, so it stays green
-    without credentials and can be used as a container health probe."""
+    without credentials."""
     return {"status": "ok"}
+
+
+# Same check under the conventional name, kept for Render's health probe and the
+# keep-warm workflow. Hidden from the docs because uBlock Origin's default lists carry
+# ||onrender.com/health, so "Try it out" on it fails in the browser of anyone running it.
+@app.get("/health", include_in_schema=False)
+def health():
+    return status()
 
 
 @app.post("/orders", tags=["orders"], dependencies=[Depends(require_api_key)])

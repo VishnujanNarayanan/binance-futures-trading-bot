@@ -34,7 +34,7 @@ def test_the_schema_carries_every_endpoint_and_the_auth_scheme(tmp_path):
     build_docs.build(tmp_path / "site")
     schema = json.loads((tmp_path / "site" / "openapi.json").read_text())
 
-    for path in ("/health", "/orders", "/positions", "/orders/history"):
+    for path in ("/status", "/orders", "/positions", "/orders/history"):
         assert path in schema["paths"]
     assert "APIKeyHeader" in schema["components"]["securitySchemes"]
 
