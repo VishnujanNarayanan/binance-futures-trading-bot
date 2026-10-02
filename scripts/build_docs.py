@@ -49,7 +49,7 @@ INDEX = """<!doctype html>
   </p>
   <div class="note">
     <p>
-      <strong>Reads are open.</strong> <code>/health</code>, <code>/positions</code> and
+      <strong>Reads are open.</strong> <code>/status</code>, <code>/positions</code> and
       the order history need no key.
     </p>
     <p>
